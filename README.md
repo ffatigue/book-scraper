@@ -1,5 +1,6 @@
 # Project Gutenberg Top 100 Scraper
 ![](https://i.postimg.cc/cHry7Pn8/s-now-2.png)
+
 A Python web scraper that collects information about the top 100 most downloaded books from Project Gutenberg.
 
 ## Features
