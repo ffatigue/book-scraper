@@ -1,6 +1,5 @@
-![](https://2ip.pro/ago/uVfO8UEy.png)
 # Book Scraper
-
+![](https://i.postimg.cc/vBS2QBD4/s-now-1.png)
 A Python web scraper that collects book information from public domain book websites.
 
 ## Features
