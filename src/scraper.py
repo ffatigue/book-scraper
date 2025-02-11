@@ -3,41 +3,49 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from time import sleep
 
-class BookScraper:
-    def __init__(self, base_url):
-        self.base_url = base_url
+class GutenbergScraper:
+    def __init__(self):
+        self.base_url = "https://www.gutenberg.org/browse/scores/top"
         self.books = []
 
-    def scrape_books(self, pages=1):
-        """Scrape book information from multiple pages"""
-        for page in range(1, pages + 1):
-            url = f"{self.base_url}/page/{page}"
-            response = requests.get(url)
-            
+    def scrape_books(self):
+        """Scrape top 100 books from Project Gutenberg"""
+        try:
+            response = requests.get(self.base_url)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, 'html.parser')
-                self._parse_books(soup)
-                sleep(1)  # Be nice to the server
-            
-        return self.books
+                # Find the ordered list containing top 100 books
+                book_list = soup.find('ol')
+                if book_list:
+                    self._parse_books(book_list)
+                    return self.books
+            return []
+        except Exception as e:
+            print(f"Error scraping books: {e}")
+            return []
 
-    def _parse_books(self, soup):
+    def _parse_books(self, book_list):
         """Extract book information from the page"""
-        book_elements = soup.find_all('article', class_='book')
-        
-        for book in book_elements:
-            title = book.find('h2').text.strip()
-            author = book.find('span', class_='author').text.strip()
-            rating = book.find('span', class_='rating').text.strip()
-            
-            self.books.append({
-                'title': title,
-                'author': author,
-                'rating': rating
-            })
+        for book_item in book_list.find_all('li')[:100]:  # Get top 100 books
+            try:
+                # Extract book information
+                text = book_item.text.strip()
+                if '(' in text and ')' in text:
+                    title = text.split('(')[0].strip()
+                    downloads = text.split('(')[1].split()[0].strip()
+                    
+                    self.books.append({
+                        'title': title,
+                        'downloads': downloads
+                    })
+            except Exception as e:
+                print(f"Error parsing book: {e}")
+                continue
 
-    def save_to_csv(self, filename='books.csv'):
+    def save_to_csv(self, filename='gutenberg_top_100.csv'):
         """Save the scraped books to a CSV file"""
-        df = pd.DataFrame(self.books)
-        df.to_csv(filename, index=False)
-        return filename
+        if self.books:
+            df = pd.DataFrame(self.books)
+            df.to_csv(filename, index=False)
+            return filename
+        return None
